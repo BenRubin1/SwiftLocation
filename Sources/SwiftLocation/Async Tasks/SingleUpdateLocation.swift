@@ -91,12 +91,13 @@ extension Tasks {
         }
         
         public func willStart() {
-            guard let timeout else {
-                return
-            }
+            guard let timeout else { return }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
-                self?.continuation?.resume(throwing: LocationErrors.timeout)
+                guard let self = self else { return }
+                self.continuation?.resume(throwing: LocationErrors.timeout)
+                self.continuation = nil
+                self.cancellable?.cancel(task: self)
             }
         }
     }
