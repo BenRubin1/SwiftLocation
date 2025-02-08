@@ -71,7 +71,11 @@ extension Tasks {
             case let .receiveNewLocations(locations):
                 let filteredLocations = AccuracyFilter.filteredLocations(locations, withAccuracyFilters: accuracyFilters)
                 guard filteredLocations.isEmpty == false else {
-                    return // none of the locations respect passed filters
+                    // Remove the guard let self since we're not in a closure
+                    continuation?.resume(throwing: LocationErrors.timeout)
+                    continuation = nil
+                    cancellable?.cancel(task: self)
+                    return
                 }
                 
                 continuation?.resume(returning: .didUpdateLocations(filteredLocations))
